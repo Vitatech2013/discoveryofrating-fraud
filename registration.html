@@ -1,0 +1,115 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+<br>
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-2"><label for="">Name</label></div>
+    <div class="col-md-3"><input type="text" class="form-control" name="name" id="name" placeholder="Name"></div>
+    <div class="col-md-4"></div>
+</div><br>
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-2"><label for="">Password</label></div>
+    <div class="col-md-3"><input type="password" class="form-control" name="password" id="password"
+            placeholder="Password"></div>
+    <div class="col-md-4"></div>
+</div><br>
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-2"><label for="">Mobileno</label></div>
+    <div class="col-md-3"><input type="number" class="form-control" name="mobileno" id="mobileno"
+            placeholder="Mobileno"></div>
+    <div class="col-md-4"></div>
+</div><br>
+
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-2"><label for="">emailid</label></div>
+    <div class="col-md-3"><input type="email" class="form-control" name="email" id="email" placeholder="Email Id"></div>
+    <div class="col-md-4"></div>
+</div><br>
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-2"><label for="">Address</label></div>
+    <div class="col-md-3"><textarea class="form-control" id="address" placeholder="Address"></textarea></div>
+    <div class="col-md-4"></div>
+</div><br>
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-2"><label for="">Qualification</label></div>
+    <div class="col-md-3"> <select id="selectQualification" class="form-control">
+            <option value="">--select--</option>
+            <option value="B.TECH">B.TECH</option>
+            <option value="MBA">MBA</option>
+            <option value="MCA">MCA</option>
+            <option value="DEGREE">DEGREE</option>
+        </select></div>
+    <div class="col-md-4"></div>
+</div><br>
+
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-2"><label for="">Dob</label></div>
+    <div class="col-md-3"><input type="date" class="form-control" name="dob" id="dob" placeholder="Dob"></div>
+    <div class="col-md-4"></div>
+</div><br>
+<div class="row">
+    <div class="col-md-5"></div>
+    <div class="col-md-3"><button type="button" class="btn btn-info" onclick="Register()">Register</button></div>
+    <div class="col-md-4"></div>
+</div>
+
+<script>
+    function performAjax(httpMethod, url, params) {
+        const myPromise = new Promise((resolve, reject) => {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    resolve(this.responseText);
+                }
+                if (this.status == 500) {
+                    reject({ error: true, message: "ServerError" });
+                }
+                if (this.status == 404) {
+                    reject({ error: true, message: "Resource not found" });
+                }
+            };
+            xhttp.open(httpMethod, url, true);
+            xhttp.setRequestHeader("Content-Type", "application/json");
+            params ? xhttp.send(params) : xhttp.send();
+        });
+        return myPromise;
+    }
+
+    function Register() {
+
+        const name = document.getElementById("name").value;
+        const password = document.getElementById("password").value;
+        const mobileno = document.getElementById("mobileno").value;
+        const emailid = document.getElementById("email").value;
+        const address = document.getElementById("address").value;
+        const qualification = document.getElementById("selectQualification").value;
+        const dob = document.getElementById("dob").value;
+        const getRegPromise = performAjax(
+            "POST",
+            `http://localhost:5987/user/registration`,
+            JSON.stringify({ name, password, mobileno, emailid, address, qualification, dob })
+        );
+        getRegPromise
+            .then((regPromise) => {
+                alert('Registration Successfully Completed');
+                document.getElementById("name").value = "";
+                document.getElementById("password").value = "";
+                document.getElementById("mobileno").value = "";
+                document.getElementById("email").value = "";
+                document.getElementById("address").value = "";
+                document.getElementById("selectQualification").value = "";
+                document.getElementById("dob").value = "";
+            })
+            .catch(err => {
+                alert(err.message);
+            })
+    }
+
+</script>

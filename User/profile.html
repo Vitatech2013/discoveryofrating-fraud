@@ -1,0 +1,129 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+<br>
+<html>
+    <body onload="Profile()">        
+    </body>
+</html>
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-2"><label for="">User Name</label></div>
+    <div class="col-md-3"><input type="text" class="form-control" name="uname" id="uname" disabled="true" placeholder="User Name"></div>
+    <div class="col-md-4"></div>
+</div><br>
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-2"><label for="">Password</label></div>
+    <div class="col-md-3"><input type="password" class="form-control"  id="password" placeholder="Password"></div>
+    <div class="col-md-4"></div>
+</div><br>
+
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-2"><label for="">Mobile Number</label></div>
+    <div class="col-md-3"><input type="number" class="form-control"  id="mobile" placeholder="Mobile Number"></div>
+    <div class="col-md-4"></div>
+</div><br>
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-2"><label for="">Email Id</label></div>
+    <div class="col-md-3"><input type="email" class="form-control" id="email" placeholder="Email Id"></div>
+    <div class="col-md-4"></div>
+</div><br>
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-2"><label for="">Address</label></div>
+    <div class="col-md-3"><input type="email" class="form-control"  id="address" placeholder="Address"></div>
+    <div class="col-md-4"></div>
+</div><br>
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-2"><label for="">Qualification</label></div>
+    <div class="col-md-3"><input type="email" class="form-control" id="qualification" placeholder="Qualification"></div>
+    <div class="col-md-4"></div>
+</div><br>
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-2"><label for="">Dob</label></div>
+    <div class="col-md-3"><input type="email" class="form-control"  id="dob" placeholder="Dob"></div>
+    <div class="col-md-4"></div>
+</div><br>
+<div class="row">
+    <div class="col-md-6"></div>
+    <div class="col-md-3"><button type="button" class="btn btn-info" onclick="Update()">Update</button></div>
+    <div class="col-md-3"></div>
+</div>
+
+<script>
+    const username=sessionStorage.getItem("username");
+    const userid=sessionStorage.getItem("userid")
+    function performAjax(httpMethod, url, params) {
+        const myPromise = new Promise((resolve, reject) => {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    resolve(this.responseText);
+                }
+                if (this.status == 500) {
+                    reject({ error: true, message: "ServerError" });
+                }
+                if (this.status == 404) {
+                    reject({ error: true, message: "Resource not found" });
+                }
+            };
+            xhttp.open(httpMethod, url, true);
+            xhttp.setRequestHeader("Content-Type", "application/json");
+            params ? xhttp.send(params) : xhttp.send();
+        });
+        return myPromise;
+    }
+
+    function Profile() {
+        
+        const name=sessionStorage.getItem("uname");
+        
+        const getUsersPromise = performAjax("GET", `http://localhost:5987/User/viewprofile?name=${name}`);
+        getUsersPromise
+        .then((data) => {
+            const profile = JSON.parse(data);
+            profile.map(rec => {
+                document.getElementById("uname").value = rec.name;
+                document.getElementById("password").value = rec.password;                
+                document.getElementById("mobile").value = rec.mobileno;
+                document.getElementById("email").value = rec.emailid;
+                document.getElementById("address").value = rec.address;                
+                document.getElementById("qualification").value = rec.qualification;
+                document.getElementById("dob").value = rec.dob;
+            });
+        })
+        .catch(err => {
+            alert(err.message);
+        })
+    }
+
+    function Update() {
+      
+        const id= sessionStorage.getItem("id");
+        const name = document.getElementById("uname").value;
+        const password=  document.getElementById("password").value;                
+        const mobileno = document.getElementById("mobile").value;
+        const emailid = document.getElementById("email").value;
+        const address = document.getElementById("address").value;                
+        const qualification = document.getElementById("qualification").value;
+        const dob = document.getElementById("dob").value;
+        const getUpdatePromise = performAjax(
+            "PUT",
+            `http://localhost:5987/User/updateprofile/${id}`,
+            JSON.stringify({ name, password, mobileno, emailid, address ,qualification,dob })
+        );
+        getUpdatePromise
+        .then((updatePromise) => {
+            alert('Details Updated');
+        })
+        .catch(err => {
+            alert(err.message);
+        })
+    }
+
+</script>

@@ -1,0 +1,174 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+<html>
+
+<body onload="getUserName()">
+</body>
+
+</html>
+<br>
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-2"><label for="">UserName</label></div>
+    <div class="col-md-3"><input type="text" class="form-control" disabled="true" name="name" id="name"
+            placeholder="Name"></div>
+    <div class="col-md-4"></div>
+</div><br>
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-2"><label for="">App Name</label></div>
+    <div class="col-md-3"> <select id="selecttype" class="form-control">
+            <option value="">--select--</option>
+        </select></div>
+    <div class="col-md-4"></div>
+</div><br>
+
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-2"><label for="">Rating</label></div>
+    <div class="col-md-3">
+        <select id="selectRating" class="form-control">
+            <option value="--Select--">--select--</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+
+        </select>
+    </div>
+
+</div><br>
+
+<div class="row">
+    <div class="col-md-5"></div>
+    <div class="col-md-3"><button type="button" class="btn btn-info" onclick="AddRating()">Submit</button></div>
+    <div class="col-md-4"></div>
+</div>
+
+<script>
+    const username = sessionStorage.getItem("username");
+    function performAjax(httpMethod, url, params) {
+        const myPromise = new Promise((resolve, reject) => {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    resolve(this.responseText);
+                }
+                if (this.status == 500) {
+                    reject({ error: true, message: "ServerError" });
+                }
+                if (this.status == 404) {
+                    reject({ error: true, message: "Resource not found" });
+                }
+            };
+            xhttp.open(httpMethod, url, true);
+            xhttp.setRequestHeader("Content-Type", "application/json");
+            params ? xhttp.send(params) : xhttp.send();
+        });
+        return myPromise;
+    }
+
+    function AddRating() {
+
+        CheckRatingForFirstTime();
+
+    }
+
+    function getUserName() {
+        document.getElementById("name").value = sessionStorage.getItem("uname");
+        loadAppNames();
+    }
+
+    function loadAppNames() {
+        const getTourssPromise = performAjax("GET", "http://localhost:5987/User/viewApps");
+        getTourssPromise
+            .then((response) => {
+                bindAppsNames(response);
+            })
+            .catch(err => {
+                alert(err.message);
+            })
+    }
+
+    function CheckRatingForFirstTime() {
+
+        const name = sessionStorage.getItem("uname");
+        const appname = document.getElementById("selecttype").value;
+        const getUsersPromise = performAjax("GET", `http://localhost:5987/User/checkRatingForFirstTime?username=${name}&appname=${appname}`);
+        getUsersPromise
+            .then((data) => {
+                const records = JSON.parse(data);
+                if (records == "") {
+                    var currentDate = new Date();
+                    var day = currentDate.getDate();
+                    var month = currentDate.getMonth() + 1;
+                    var year = currentDate.getFullYear();
+                    const date = day + "-" + month + "-" + year;
+
+                    const appname = document.getElementById("selecttype").value;
+                    const username = document.getElementById("name").value;
+                    const rating = document.getElementById("selectRating").value;
+                    const status = "Real";
+                    const getRegPromise = performAjax(
+                        "POST",
+                        `http://localhost:5987/User/appsRating`,
+                        JSON.stringify({ appname, username, rating, status })
+                    );
+                    getRegPromise
+                        .then((regPromise) => {
+                            alert('Rating Sent Successfully');
+                            document.getElementById("selecttype").value = "";
+                            document.getElementById("selectRating").value = "";
+                        })
+                        .catch(err => {
+                            alert(err.message);
+                        })
+                }
+                else {
+                    var currentDate = new Date();
+                    var day = currentDate.getDate();
+                    var month = currentDate.getMonth() + 1;
+                    var year = currentDate.getFullYear();
+                    const date = day + "-" + month + "-" + year;
+                    
+                    const appname = document.getElementById("selecttype").value;
+                    const username = document.getElementById("name").value;
+                    const rating = document.getElementById("selectRating").value;
+                    const status = "Fake";
+                    const getRegPromise = performAjax(
+                        "POST",
+                        `http://localhost:5987/User/appsRating`,
+                        JSON.stringify({ appname, username, rating, status })
+                    );
+                    getRegPromise
+                        .then((regPromise) => {
+                            alert('Rating Sent Successfully');
+                            document.getElementById("selecttype").value = "";
+                            document.getElementById("selectRating").value = "";
+                        })
+                        .catch(err => {
+                            alert(err.message);
+                        })
+                }
+
+            })
+            .catch(err => {
+                alert(err.message);
+            })
+    }
+
+    function bindAppsNames(appsData) {
+        const data = JSON.parse(appsData);
+        let names = document.getElementById("selecttype");
+        for (let i = 0; i < data.length; i++) {
+            let option = document.createElement("OPTION");
+            option.innerHTML = data[i].appname;
+            option.value = data[i].appname;
+            names.options.add(option);
+        }
+    }
+
+
+</script>

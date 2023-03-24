@@ -1,0 +1,276 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<html>
+<style>
+  .tablecss {
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  .tablecss td,
+  .tablecss th {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+
+  .tablecss tr:nth-child(odd) {
+    background-color: #f2f2f2;
+  }
+
+  .tablecss tr:hover {
+    background-color: #ddd;
+  }
+
+  .tablecss th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: center;
+    background-color: lavender;
+    color: black;
+    font-weight: bold;
+  }
+</style>
+
+<body onload="loadData()">
+  <center>
+    <h3>View Posted App Details</h3>
+    <table id="files" class="tablecss"></table>
+  </center>
+</body>
+
+</html>
+<div class="container">
+
+  <!-- Modal -->
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Edit Post</h4>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-2"><label for="">App Name</label></div>
+            <div class="col-md-4"><input type="text" class="form-control" id="appname" placeholder="App Name"><input
+                type="hidden" id="txtid"></div>
+            <div class="col-md-3"></div>
+          </div><br>
+
+          <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-2"><label for="">Description</label></div>
+            <div class="col-md-4"><input type="text" class="form-control" id="description" placeholder="Description">
+            </div>
+            <div class="col-md-3"></div>
+          </div><br>
+
+          <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-2"><label for="">Category</label></div>
+            <div class="col-md-4"><input type="text" class="form-control" id="category" placeholder="Category"></div>
+            <div class="col-md-3"></div>
+          </div><br>
+
+          <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-2"><label for="">Updated Version</label></div>
+            <div class="col-md-4"><input type="text" class="form-control" id="updatedversion"
+                placeholder="Updated Version">
+            </div>
+            <div class="col-md-3"></div>
+          </div><br>
+          <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-2"><label for="">Updation Date</label></div>
+            <div class="col-md-4"><input type="text" width="100px" class="form-control" id="updationdate"
+                placeholder="Updation Date"></div>
+            <div class="col-md-3"></div>
+          </div><br>
+          <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-2"><label for="">Memory Size</label></div>
+            <div class="col-md-4"><input type="text" class="form-control" id="memorysize" placeholder="memorysize">
+            </div>
+            <div class="col-md-3"></div>
+          </div><br>
+          <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-2"><label for="">Language</label></div>
+            <div class="col-md-4"><input type="text" class="form-control" id="language" placeholder="Language"></div>
+            <div class="col-md-3"></div>
+          </div><br>
+          <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-2"><label for="">Seller</label></div>
+            <div class="col-md-4"><input type="text" class="form-control" id="seller" placeholder="Seller"></div>
+            <div class="col-md-3"></div>
+          </div><br>
+          <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-2"><label for="">Apps Price</label></div>
+            <div class="col-md-4"><input type="text" class="form-control" id="appsprice" placeholder="Appsprice"></div>
+            <div class="col-md-3"></div>
+            <br> <br> <br>
+            <div class="row">
+              <div class="col-md-5"></div>
+              <div class="col-md-3"><button type="button" class="btn btn-info" onclick="updatePosts()">Update</button>
+              </div>
+              <div class="col-md-4"></div>
+            </div><br>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+  <script>
+    function performAjax(httpMethod, url, params) {
+      const myPromise = new Promise((resolve, reject) => {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+          if (this.readyState == 4 && this.status == 200) {
+            resolve(this.responseText);
+          }
+          if (this.status == 500) {
+            reject({ error: true, message: "ServerError" });
+          }
+          if (this.status == 404) {
+            reject({ error: true, message: "Resource not found" });
+          }
+        };
+        xhttp.open(httpMethod, url, true);
+        xhttp.setRequestHeader("Content-Type", "application/json");
+        params ? xhttp.send(params) : xhttp.send();
+      });
+      return myPromise;
+    }
+
+    function editPost(event) {
+
+      const getPostsPromise = performAjax("GET", `http://localhost:5987/Admin/${event.target.id}`);
+      getPostsPromise
+        .then((postData) => {
+          posts = JSON.parse(postData);
+          if (posts._id === event.target.id) {
+            $("#myModal").modal();
+            document.getElementById("txtid").value = posts._id;
+            document.getElementById("appname").value = posts.appname;
+            document.getElementById("description").value = posts.description;
+            document.getElementById("category").value = posts.category;
+            document.getElementById("updatedversion").value = posts.updatedversion;
+            document.getElementById("updationdate").value = posts.updationdate;
+            document.getElementById("memorysize").value = posts.memorysize;
+            document.getElementById("language").value = posts.language;
+            document.getElementById("seller").value = posts.seller;
+            document.getElementById("appsprice").value = posts.appsprice;
+          }
+        })
+        .catch(err => {
+          alert(err.message);
+        })
+    }
+
+    function updatePosts() {
+      const id = document.getElementById("txtid").value;
+
+      const appname = document.getElementById("appname").value;
+      const description = document.getElementById("description").value;
+      const category = document.getElementById("category").value;
+      const updatedversion = document.getElementById("updatedversion").value;
+      const updationdate = document.getElementById("updationdate").value;
+      const memorysize = document.getElementById("memorysize").value;
+      const language = document.getElementById("language").value;
+      const seller = document.getElementById("seller").value;
+      const appsprice = document.getElementById("appsprice").value;
+      const getpostsAppPromise = performAjax('PUT', `http://localhost:5987/Admin/${id}`,
+        JSON.stringify({ appname, description, category, updatedversion, updationdate, memorysize, language, seller, appsprice }));
+      getpostsAppPromise
+        .then((message) => {
+          loadData();
+          alert("Update Success");
+          $('#myModal').modal("hide");
+        })
+        .catch(err => {
+          alert(err.message);
+        })
+    }
+
+    function loadData() {
+      const getFilesPromise = performAjax("GET", "http://localhost:5987/admin/viewPostedApps");
+      getFilesPromise
+        .then((FilesList) => {
+          showFilesDetails(FilesList);
+        })
+        .catch(err => {
+          alert(err.message);
+        })
+    }
+
+    function showFilesDetails(data) {
+      const records = JSON.parse(data);
+      let tableRow = '';
+      const tableHeader = `<tr style="background: lavender;"><th>S.No.</th><th>AppName</th><th>Description</th><th>Category</th><th>Updated Version</th><th>Updation Date</th><th>Memory Size</th><th>Language</th><th>Seller</th><th>Apps Price</th><th>AppsImage</th><th>&nbsp;&nbsp;&nbsp;&nbsp;Action</th></tr>`;
+      if (records.length > 0) {
+        tableRow = records.map((rec, index) => {
+          let editButton = `<a id="${rec._id}" class="glyphicon glyphicon-pencil" data-toggle="modal" data-target="#myModal" style="color:blue; font-size:22px;" onclick="editPost(event)"></a>`;
+          let deleteButton = `<a id="${rec._id}" class="fa fa-trash" style="color:blue; font-size:22px;" onclick="deleteFile(event)"></a>`;
+          let downloadButton = `<a id="${rec._id}" class="glyphicon glyphicon-download-alt" style="color:blue; font-size:22px;" onclick="downloadDoc(event)"></a>`;
+          return `<tr><td align="right">${index + 1}</td><td>${rec.appname}</td><td>${rec.description}</td><td>${rec.category}</td><td>${rec.updatedversion}</td><td>${rec.updationdate}</td><td>${rec.memorysize}</td><td>${rec.language}</td><td>${rec.seller}</td><td>${rec.appsprice}</td><td><img src=${rec.appsimage} height="40" width="45" </td><td align="center">${editButton}&nbsp;&nbsp;${deleteButton}&nbsp;&nbsp;${downloadButton}</td></tr>`;
+        });
+        document.getElementById("files").innerHTML = `${tableHeader}${tableRow.join('')}`;
+      }
+      else {
+        tableRow = `<tr><td colspan="7" align="center">No Data Found</td></tr>`;
+        document.getElementById("files").innerHTML = `${tableHeader}${tableRow}`;
+      }
+    }
+
+    function downloadDoc(id) {
+      console.log(id);
+      const getFilesPromise = performAjax("GET", `http://localhost:5987/admin/downloadFiles/${id}`);
+      getFilesPromise
+        .then((response) => {
+          window.open(JSON.parse(response).file);
+        })
+        .catch(err => {
+          alert(err.message);
+        })
+    }
+
+    function deleteFile(event) {
+      var result = confirm("Are you sure you want to delete?");
+      if (result) {
+        const getDeletePromise = performAjax('DELETE', `http://localhost:5987/admin/${event.target.id}`);
+        getDeletePromise
+          .then((FilesList) => {
+            showFilesDetails(FilesList);
+          })
+          .catch(err => {
+            alert(err.message);
+          })
+      }
+    }
+
+  function downloadDoc(event) {
+    const getFilesPromise = performAjax("GET", `http://localhost:5987/User/downloadFiles/${event.target.id}`);
+    getFilesPromise
+      .then((response) => {
+
+        window.open(JSON.parse(response).uploadapps);
+      })
+      .catch(err => {
+        alert(err.message);
+      })
+  }
+  </script>
